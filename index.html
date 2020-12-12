@@ -75,6 +75,13 @@
 
             move() {
                 this.prevPosition = new Transform(this.position.x, this.position.y);
+
+                if (this.position.x > canvas.width || this.position.x < 0) {
+                    this.position.x = canvas.width - this.position.x;
+                }
+                if (this.position.y > canvas.height || this.position.y < 0) {
+                    this.position.y = canvas.height - this.position.y;
+                }
                 switch (this.moveDirection) {
                     case 1:
                         this.position = new Transform(this.position.x, this.position.y -= 10);
@@ -113,13 +120,6 @@
                         return;
                     }
                 });
-
-                if (this.position.x > canvas.width || this.position.x < 0) {
-                    this.position.x = canvas.width - this.position.x;
-                }
-                if (this.position.y > canvas.height || this.position.y < 0) {
-                    this.position.y = canvas.height - this.position.y;
-                }
             }
 
             addBody() {
