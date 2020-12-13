@@ -8,7 +8,7 @@
 
 <body style="margin:  0;">
     <h1>SCORE: <a id="score">0</a></h1>
-    <canvas id="canvas" style="display: block;">Your browser not supported</canvas>
+    <canvas id="canvas" style="display: block; margin: 20px;">Your browser not supported</canvas>
 
     <script>
         let canvas = document.getElementById('canvas');
@@ -76,10 +76,10 @@
             move() {
                 this.prevPosition = new Transform(this.position.x, this.position.y);
 
-                if (this.position.x > canvas.width || this.position.x < 0) {
+                if (this.position.x >= canvas.width || this.position.x <= 0) {
                     this.position.x = canvas.width - this.position.x;
                 }
-                if (this.position.y > canvas.height || this.position.y < 0) {
+                if (this.position.y >= canvas.height || this.position.y <= 0) {
                     this.position.y = canvas.height - this.position.y;
                 }
                 switch (this.moveDirection) {
@@ -204,10 +204,12 @@
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.strokeRect(0, 0, canvas.width, canvas.height);
+            ctx.fill();
             snake.draw(ctx);
             apples.forEach(element => {
                 element.draw(ctx);
             });
+            ctx.clear();
         }
 
         function gameLogic() {
