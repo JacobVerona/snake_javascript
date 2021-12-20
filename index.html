@@ -15,8 +15,13 @@
         let ctx = canvas.getContext('2d');
         let score = 0;
 
-        canvas.width = 360;
-        canvas.height = 360;
+        let pause = false;
+
+        let canvasSize = 12;
+        let gameScale = 40;
+
+        canvas.width = canvasSize * gameScale;
+        canvas.height = canvasSize * gameScale;
 
         class Transform {
             constructor(x, y) {
@@ -43,7 +48,7 @@
 
             draw(context) {
                 context.fillStyle = 'lightGreen';
-                context.fillRect(this.position.x, this.position.y, 10, 10);
+                context.fillRect(this.position.x, this.position.y, gameScale, gameScale);
             }
 
             move() {
@@ -63,7 +68,7 @@
 
             draw(context) {
                 context.fillStyle = 'green';
-                context.fillRect(this.position.x, this.position.y, 10, 10);
+                context.fillRect(this.position.x, this.position.y, gameScale, gameScale);
                 this.bodies.forEach(element => {
                     element.draw(context);
                 });
@@ -76,24 +81,28 @@
             move() {
                 this.prevPosition = new Transform(this.position.x, this.position.y);
 
-                if (this.position.x >= canvas.width || this.position.x <= 0) {
+                if (this.position.x > canvas.width) {
                     this.position.x = canvas.width - this.position.x;
-                }
-                if (this.position.y >= canvas.height || this.position.y <= 0) {
+                } else if (this.position.y > canvas.height) {
                     this.position.y = canvas.height - this.position.y;
+                } else if (this.position.x < 0) {
+                    this.position.x = canvas.width;
+                } else if (this.position.y < 0) {
+                    this.position.y = canvas.height;
                 }
+
                 switch (this.moveDirection) {
                     case 1:
-                        this.position = new Transform(this.position.x, this.position.y -= 10);
+                        this.position = new Transform(this.position.x, this.position.y -= gameScale);
                         break;
                     case 2:
-                        this.position = new Transform(this.position.x, this.position.y += 10);
+                        this.position = new Transform(this.position.x, this.position.y += gameScale);
                         break;
                     case 3:
-                        this.position = new Transform(this.position.x -= 10, this.position.y);
+                        this.position = new Transform(this.position.x -= gameScale, this.position.y);
                         break;
                     case 4:
-                        this.position = new Transform(this.position.x += 10, this.position.y);
+                        this.position = new Transform(this.position.x += gameScale, this.position.y);
                         break;
                     case 0: break;
                 }
@@ -139,7 +148,7 @@
 
             draw(context) {
                 context.fillStyle = 'red';
-                context.fillRect(this.position.x, this.position.y, 10, 10);
+                context.fillRect(this.position.x, this.position.y, gameScale, gameScale);
             }
 
             destroy() {
@@ -154,21 +163,20 @@
                 case 32:
                     addScore(10);
                     break;
-                case 87:
+                case 87 || 38:
                     snake.setDirection(MoveDirections.up);
                     break;
-                case 83:
+                case 83 || 40:
                     snake.setDirection(MoveDirections.down);
                     break;
-                case 65:
+                case 65 || 37:
                     snake.setDirection(MoveDirections.left);
                     break;
-                case 68:
+                case 68 || 39:
                     snake.setDirection(MoveDirections.right);
                     break;
                 case 27:
-                    clearInterval(gameLoop);
-                    StartGame();
+                    pause = !pause;
                     break;
             }
         });
@@ -178,9 +186,9 @@
         let apples = new Array();
         let snake = new SnakeHead();
 
-
         let gameLoop;
         StartGame();
+
         function StartGame() {
             score = 0;
             addScore(0);
@@ -195,9 +203,11 @@
         function loop() {
             clearInterval(gameLoop);
             gameLoop = setInterval(function () {
-                gameLogic();
+                if (pause == false) {
+                    gameLogic();
+                }
                 render();
-            }, 700 / (score + 1));
+            }, 200);
         }
 
         function render() {
@@ -209,7 +219,6 @@
             apples.forEach(element => {
                 element.draw(ctx);
             });
-            ctx.clear();
         }
 
         function gameLogic() {
@@ -217,11 +226,26 @@
         }
 
         function createApple() {
-            let apple = new Apple(new Transform(getRandomInt(canvas.width - 1), getRandomInt(canvas.height - 1)));
+            let newTransform = new Transform(getRandomInt(canvas.width - 1), getRandomInt(canvas.height - 1))
+
+            let createdInSnakeBody = false;
+
+            createdInSnakeBody = snake.position.equals(newTransform);
+            snake.bodies.forEach(body => {
+                if (body.position.equals(newTransform)) {
+                    createdInSnakeBody = true;
+                }
+            });
+
+            if (createdInSnakeBody) {
+                createApple();
+            } else {
+                let apple = new Apple(newTransform);
+            }
         }
 
         function getRandomInt(max) {
-            return Math.floor(Math.random().toFixed(1) * Math.floor(max / 10)) * 10;
+            return Math.floor(Math.random().toFixed(1) * Math.floor(max / gameScale)) * gameScale;
         }
 
         function addScore(count) {
